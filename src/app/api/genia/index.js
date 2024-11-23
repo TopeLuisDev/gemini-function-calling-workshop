@@ -21,12 +21,31 @@ const model = genAI.getGenerativeModel({
   toolConfig: {functionCallingConfig: {mode: "ANY"}},
 });
 
+function getPart(description, picture){
+	if (description){
+		return description;
+	}
 
+	const [header, base64] = picture.split(",");
+	// const mimeType = header.match(/data:(.*);/)[1];
+	const mimeType = header.match(/\w+\/\w+/)[0];
+
+	return [
+		"Generate trasnsaction from the invoice picture",
+		{
+			inlineData:{
+				mimeType,
+				data: base64,
+			}
+	}]
+}
 
 
 export async function extractData(description, picture) {
 	console.log("hola extractdata")
-  const result = await model.generateContent(description);
+	const requestContent = getPart(description, picture);
+
+  const result = await model.generateContent(requestContent);
 	console.log(result)
 	console.log(result.candidates)
   for(const candidate of result.response.candidates) {
